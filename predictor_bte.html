@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BTE clasificador de sectores y entidades</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .bar-chart {
+            background-color: #007bff;
+            height: 20px;
+            color: white;
+            text-align: right;
+            padding-right: 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">BTE clasificador de sectores y entidades</h1>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <input type="text" id="inputValue" class="form-control" placeholder="Enter value">
+                <button onclick="callApi()" class="btn btn-primary btn-block mt-3">Clasificar</button>
+            </div>
+        </div>
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-6">
+                <div id="apiResult" class="alert alert-secondary"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript to call the API -->
+    <script>
+        function callApi() {
+            var inputValue = document.getElementById('inputValue').value;
+            var apiUrl = 'http://ec2-34-229-72-126.compute-1.amazonaws.com:8080/predecir_mensaje/' + encodeURIComponent(inputValue);
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    var resultContent = '<h4>Respuesta clasificador:</h4>';
+                    for (var key in data) {
+                        if (data.hasOwnProperty(key)) {
+                            resultContent += '<p><strong>' + key + ':</strong> ';
+                            console.log(key)
+                            if (key === 'Sector probabilidad' | key === 'Entidad probabilidad') {
+                                var predictions = data[key];
+                                for (var option in predictions) {
+                                    var width = predictions[option] * 100;
+                                    resultContent += `<div>${option}: <div class="bar-chart" style="width: ${width}%">${predictions[option]}</div></div>`;
+                                }
+                            } else {
+                                resultContent += data[key];
+                            }
+                            resultContent += '</p>';
+                        }
+                    }
+                    document.getElementById('apiResult').innerHTML = resultContent;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('apiResult').innerHTML = 'Error calling the API';
+                });
+        }
+    </script>
+</body>
+</html>
